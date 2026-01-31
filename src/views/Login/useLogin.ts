@@ -1,8 +1,9 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useLoginMutation } from '../../api/hooks/auth/useLoginMutation';
+import { useGoogleSignIn } from '../../api/hooks/auth/useGoogleSignIn';
+import { useCallback, useState } from 'react';
 
 const loginSchema = z.object({
   email: z
@@ -19,6 +20,8 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 
 const useLogin = () => {
   const loginMutation = useLoginMutation();
+  const googleSignIn = useGoogleSignIn();
+  const [googleError, setGoogleError] = useState<Error | null>(null);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -45,11 +48,21 @@ const useLogin = () => {
 
   const handleLogin = form.handleSubmit(onSubmit);
 
+  const handleGoogleLogin = useCallback(async () => {
+    setGoogleError(null);
+    const result = await googleSignIn.signIn();
+
+    if (!result.success && result.error) {
+      setGoogleError(result.error);
+    }
+  }, [googleSignIn]);
+
   return {
     form,
     handleLogin,
-    isLoading: loginMutation.isPending,
-    error: loginMutation.error,
+    handleGoogleLogin,
+    isLoading: loginMutation.isPending || googleSignIn.isLoading,
+    error: loginMutation.error || googleError,
     isSuccess: loginMutation.isSuccess,
   };
 };

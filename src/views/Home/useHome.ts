@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useGetPosts } from '../../api/hooks/posts/useGetPosts';
 import { RootStackParamList } from '../../routes';
 import { IPost } from '../../types/post';
-import { useGetPosts } from '../../api/hooks/posts/useGetPosts';
 
 type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 

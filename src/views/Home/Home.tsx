@@ -8,16 +8,16 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from '../../helper/useAuth';
+import PostCard from '../../components/PostCard';
 import useHome from './useHome';
 import { useTheme } from '../../theme/useTheme';
-import PostCard from '../../components/PostCard';
 import { IPost } from '../../types/post';
 
 export default function Home() {
   const { colors } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, googleUser, logout } = useAuth();
 
-  const displayEmail = user?.email || '';
+  const displayEmail = user?.email || googleUser?.email || '';
   const {
     posts,
     isLoading,

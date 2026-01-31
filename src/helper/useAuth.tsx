@@ -10,6 +10,13 @@ export interface User {
   updatedAt: string;
 }
 
+export interface GoogleUser {
+  email: string;
+  name: string;
+  photo: string;
+  idToken: string;
+}
+
 interface ApiResponse<T> {
   meta: {
     status: number;
@@ -20,10 +27,12 @@ interface ApiResponse<T> {
 
 interface AuthContextType {
   user: User | null;
+  googleUser: GoogleUser | null;
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   setToken: (token: string) => Promise<void>;
+  setGoogleUser: (googleUser: GoogleUser) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -33,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [googleUser, setGoogleUserState] = useState<GoogleUser | null>(null);
   const [token, setTokenState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -47,13 +57,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const response = await api.get<ApiResponse<User>>('/auth/me');
           setUser(response.data.data);
         } else if (storedGoogleUser) {
-          //
+          setGoogleUserState(JSON.parse(storedGoogleUser));
         }
       } catch {
         await AsyncStorage.removeItem('token');
         await AsyncStorage.removeItem('googleUser');
         setTokenState(null);
         setUser(null);
+        setGoogleUserState(null);
       } finally {
         setIsLoading(false);
       }
@@ -73,24 +84,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await fetchUserMe();
   };
 
+  const setGoogleUser = async (newGoogleUser: GoogleUser) => {
+    await AsyncStorage.setItem('googleUser', JSON.stringify(newGoogleUser));
+    setGoogleUserState(newGoogleUser);
+  };
+
   const logout = async () => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('googleUser');
     setTokenState(null);
     setUser(null);
+    setGoogleUserState(null);
   };
 
-  // Authenticated jika ada token (normal login) atau googleUser (Google login)
-  const isAuthenticated = !!(token && user);
+  const isAuthenticated = !!(token && user) || !!googleUser;
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        googleUser,
         token,
         isLoading,
         isAuthenticated,
         setToken,
+        setGoogleUser,
         logout,
       }}
     >
