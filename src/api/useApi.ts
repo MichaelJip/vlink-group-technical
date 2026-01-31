@@ -7,6 +7,7 @@ import axios, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'https://rt07-api.michaeljip.com/api';
+export const PLACEHOLDER_API = 'https://jsonplaceholder.typicode.com';
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
